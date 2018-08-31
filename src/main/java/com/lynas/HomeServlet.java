@@ -1,6 +1,6 @@
 package com.lynas;
 
-import org.hibernate.SessionFactory;
+import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 
 import javax.servlet.ServletException;
@@ -15,22 +15,20 @@ public class HomeServlet extends HttpServlet {
 
     public void init() throws ServletException {
 
-
-
-
-
         message = "Hello World";
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-        sessionFactory.getCurrentSession().beginTransaction();
-        User user = (User) sessionFactory.getCurrentSession().createCriteria(User.class)
-                .add(Restrictions.eq("username", "craig"))
-                .uniqueResult();
-        System.out.println(user.getUsername());
-        sessionFactory.getCurrentSession().close();
+        try (Session session = HibernateUtil.getSessionFactory().getCurrentSession()) {
+            session.beginTransaction();
+            User user = (User) session.createCriteria(User.class)
+                    .add(Restrictions.eq("username", "craig"))
+                    .uniqueResult();
+            System.out.println(user.getUsername());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // Set response content type
         response.setContentType("text/html");
